@@ -55,6 +55,7 @@ namespace VideoViewer
 
         public MainWindow()
         {
+            Thumbnails.Start(Dispatcher); // before any card binds and asks for a thumbnail
             InitializeComponent();
             _settings = Json.Load<Settings>(AppPaths.SettingsFile);
             _library = new Library(Dispatcher);
