@@ -38,7 +38,9 @@ jobs:
           Copy-Item "$bin/*" out -Recurse -Force
 
           $vlc = "out/libvlc"
-          Remove-Item -Recurse -Force "$vlc/win-x86" -ErrorAction SilentlyContinue
+          # 64-bit Intel/AMD only (the exe is x64)
+          Get-ChildItem $vlc -Directory | Where-Object Name -ne 'win-x64' | Remove-Item -Recurse -Force
+          Get-ChildItem $vlc -Recurse -Include *.lib | Remove-Item -Force
           # Playback-only build: drop VLC's GUI, scripting, streaming-out and visualisation modules
           $p = "$vlc/win-x64/plugins"
           foreach ($d in 'gui','lua','visualization','services_discovery','stream_out','control','access_output','mux','video_splitter') {
