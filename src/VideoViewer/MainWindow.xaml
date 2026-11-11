@@ -22,7 +22,7 @@
                     BorderThickness="1" BorderBrush="#10FFFFFF" RenderTransformOrigin="0.5,0.5"
                     MouseLeftButtonDown="Card_MouseDown" MouseLeftButtonUp="Card_MouseUp" MouseRightButtonUp="Card_RightClick">
                 <Border.RenderTransform>
-                    <TranslateTransform x:Name="Lift" />
+                    <TranslateTransform />
                 </Border.RenderTransform>
                 <Grid>
                     <Grid.RowDefinitions>
@@ -47,7 +47,7 @@
                             <Border.Background>
                                 <ImageBrush ImageSource="{Binding Thumbnail}" Stretch="UniformToFill">
                                     <ImageBrush.RelativeTransform>
-                                        <ScaleTransform x:Name="Zoom" CenterX="0.5" CenterY="0.5" />
+                                        <ScaleTransform CenterX="0.5" CenterY="0.5" />
                                     </ImageBrush.RelativeTransform>
                                 </ImageBrush>
                             </Border.Background>
@@ -65,7 +65,7 @@
                         <Border x:Name="PlayBadge" Width="52" Height="52" CornerRadius="26" Background="#E6FFFFFF" Opacity="0"
                                 HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" IsHitTestVisible="False">
                             <Border.RenderTransform>
-                                <ScaleTransform x:Name="PlayScale" ScaleX="0.7" ScaleY="0.7" />
+                                <ScaleTransform ScaleX="0.7" ScaleY="0.7" />
                             </Border.RenderTransform>
                             <TextBlock Style="{StaticResource Glyph}" Text="&#xE768;" FontSize="20" Foreground="#0A0C11" Margin="3,0,0,0" />
                         </Border>
@@ -121,20 +121,20 @@
                     <Trigger.EnterActions>
                         <BeginStoryboard>
                             <Storyboard>
-                                <DoubleAnimation Storyboard.TargetName="Lift" Storyboard.TargetProperty="Y" To="-4" Duration="0:0:0.18">
+                                <DoubleAnimation Storyboard.TargetName="Card" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="-4" Duration="0:0:0.18">
                                     <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
                                 </DoubleAnimation>
-                                <DoubleAnimation Storyboard.TargetName="Zoom" Storyboard.TargetProperty="ScaleX" To="1.07" Duration="0:0:0.45">
+                                <DoubleAnimation Storyboard.TargetName="Pic" Storyboard.TargetProperty="(Border.Background).(Brush.RelativeTransform).(ScaleTransform.ScaleX)" To="1.07" Duration="0:0:0.45">
                                     <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
                                 </DoubleAnimation>
-                                <DoubleAnimation Storyboard.TargetName="Zoom" Storyboard.TargetProperty="ScaleY" To="1.07" Duration="0:0:0.45">
+                                <DoubleAnimation Storyboard.TargetName="Pic" Storyboard.TargetProperty="(Border.Background).(Brush.RelativeTransform).(ScaleTransform.ScaleY)" To="1.07" Duration="0:0:0.45">
                                     <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
                                 </DoubleAnimation>
                                 <DoubleAnimation Storyboard.TargetName="PlayBadge" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.16" />
-                                <DoubleAnimation Storyboard.TargetName="PlayScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.22">
+                                <DoubleAnimation Storyboard.TargetName="PlayBadge" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.22">
                                     <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.4" /></DoubleAnimation.EasingFunction>
                                 </DoubleAnimation>
-                                <DoubleAnimation Storyboard.TargetName="PlayScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.22">
+                                <DoubleAnimation Storyboard.TargetName="PlayBadge" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.22">
                                     <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.4" /></DoubleAnimation.EasingFunction>
                                 </DoubleAnimation>
                             </Storyboard>
@@ -143,12 +143,12 @@
                     <Trigger.ExitActions>
                         <BeginStoryboard>
                             <Storyboard>
-                                <DoubleAnimation Storyboard.TargetName="Lift" Storyboard.TargetProperty="Y" To="0" Duration="0:0:0.2" />
-                                <DoubleAnimation Storyboard.TargetName="Zoom" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.3" />
-                                <DoubleAnimation Storyboard.TargetName="Zoom" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.3" />
+                                <DoubleAnimation Storyboard.TargetName="Card" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="0:0:0.2" />
+                                <DoubleAnimation Storyboard.TargetName="Pic" Storyboard.TargetProperty="(Border.Background).(Brush.RelativeTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.3" />
+                                <DoubleAnimation Storyboard.TargetName="Pic" Storyboard.TargetProperty="(Border.Background).(Brush.RelativeTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.3" />
                                 <DoubleAnimation Storyboard.TargetName="PlayBadge" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.12" />
-                                <DoubleAnimation Storyboard.TargetName="PlayScale" Storyboard.TargetProperty="ScaleX" To="0.7" Duration="0:0:0.12" />
-                                <DoubleAnimation Storyboard.TargetName="PlayScale" Storyboard.TargetProperty="ScaleY" To="0.7" Duration="0:0:0.12" />
+                                <DoubleAnimation Storyboard.TargetName="PlayBadge" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.7" Duration="0:0:0.12" />
+                                <DoubleAnimation Storyboard.TargetName="PlayBadge" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.7" Duration="0:0:0.12" />
                             </Storyboard>
                         </BeginStoryboard>
                     </Trigger.ExitActions>
