@@ -1,0 +1,3 @@
+app/** binary -diff
+*.ico binary
+*.png binary

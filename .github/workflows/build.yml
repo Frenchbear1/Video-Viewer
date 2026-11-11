@@ -1,7 +1,83 @@
-name: probe
-on: workflow_dispatch
+name: Build Windows app
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-windows
+  cancel-in-progress: true
+
 jobs:
-  p:
+  build:
     runs-on: windows-latest
     steps:
-      - run: echo ok
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build src/VideoViewer/VideoViewer.csproj -c Release -nologo -v minimal
+
+      - name: Collect output and trim the VLC engine
+        shell: pwsh
+        run: |
+          $bin = "src/VideoViewer/bin/Release/net48"
+          if (-not (Test-Path "$bin/VideoViewer.exe")) { Get-ChildItem src/VideoViewer/bin -Recurse | Select-Object FullName; throw "exe not found" }
+          New-Item -ItemType Directory -Force out | Out-Null
+          Copy-Item "$bin/*" out -Recurse -Force
+
+          $vlc = "out/libvlc"
+          Remove-Item -Recurse -Force "$vlc/win-x86" -ErrorAction SilentlyContinue
+          # Playback-only build: drop VLC's GUI, scripting, streaming-out and visualisation modules
+          $p = "$vlc/win-x64/plugins"
+          foreach ($d in 'gui','lua','visualization','services_discovery','stream_out','control','access_output','mux','video_splitter') {
+            Remove-Item -Recurse -Force "$p/$d" -ErrorAction SilentlyContinue
+          }
+          Remove-Item -Recurse -Force "$vlc/win-x64/lua","$vlc/win-x64/hrtfs","$vlc/win-x64/locale","$vlc/win-x64/skins" -ErrorAction SilentlyContinue
+          Get-ChildItem out -Recurse -Include *.pdb,*.xml | Remove-Item -Force
+
+          "Total size (MB): " + [math]::Round(((Get-ChildItem out -Recurse -File | Measure-Object Length -Sum).Sum / 1MB), 1)
+          "File count: " + (Get-ChildItem out -Recurse -File).Count
+          Get-ChildItem out -File | Select-Object Name, Length | Format-Table -AutoSize
+          Get-ChildItem out -Recurse -File | Sort-Object Length -Descending | Select-Object -First 8 FullName, Length | Format-Table -AutoSize
+
+      - name: Commit app folder (ready-to-run exe)
+        shell: pwsh
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if (Test-Path app) { Remove-Item -Recurse -Force app }
+          Copy-Item out app -Recurse
+          git add -A app
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) { "No changes to app/"; exit 0 }
+          git commit -m "Build VideoViewer.exe from ${{ github.sha }} [skip ci]"
+          for ($i = 0; $i -lt 3; $i++) {
+            git pull --rebase origin main
+            git push origin HEAD:main
+            if ($LASTEXITCODE -eq 0) { exit 0 }
+            Start-Sleep -Seconds 5
+          }
+          throw "push failed"
+
+      - name: Publish release zip
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Compress-Archive -Path out/* -DestinationPath VideoViewer-win-x64.zip -CompressionLevel Optimal
+          gh release delete latest --yes --cleanup-tag 2>$null
+          $global:LASTEXITCODE = 0
+          gh release create latest VideoViewer-win-x64.zip --title "Video Viewer (latest build)" --latest `
+            --notes "Unzip anywhere and double-click **VideoViewer.exe**. No install needed (Windows 10/11, 64-bit). Built from ${{ github.sha }}."
